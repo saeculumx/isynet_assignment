@@ -6,3 +6,5 @@ pydantic-settings
 pandas-profiling
 fastparquet
 pyarrow
+fuzzywuzzy
+python-Levenshtein

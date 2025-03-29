@@ -1,11 +1,41 @@
 import pandas as pd
 import os
-# from ydata_profiling import ProfileReport
 from glob import glob
+from fuzzywuzzy import process
 
 PARQUET_PATH = "raw/merged_data.parquet"
 PROCESSED_PATH = "raw/processed_files.txt"
 RAW_DIR = "data"
+
+# Top 50 Indian cities
+india_cities = [
+    "MUMBAI", "DELHI", "NAVI MUMBAI", "BANGALORE", "CHENNAI", "HYDERABAD", "KOLKATA",
+    "PUNE", "AHMEDABAD", "NOIDA", "THANE", "JAIPUR", "GURGAON", "FARIDABAD", "LUCKNOW",
+    "NAGPUR", "VISAKHAPATNAM", "INDORE", "BHOPAL", "PATNA", "CHANDIGARH", "KANPUR",
+    "SURAT", "VADODARA", "RAJKOT", "LUDHIANA", "AGRA", "RANCHI", "COIMBATORE", "GUWAHATI",
+    "JAMSHEDPUR", "DEHRADUN", "JODHPUR", "MANGALORE", "ALLAHABAD", "TIRUPATI",
+    "AMRITSAR", "TRIVANDRUM", "VIJAYAWADA", "MADURAI", "VARANASI", "AURANGABAD",
+    "BHIWANDI", "HUBLI", "KOTA", "NASHIK", "SALEM", "GHAZIABAD", "RAIPUR", "SRINAGAR"
+]
+
+# Top 50 Global cities
+global_cities = [
+    "NEW YORK", "LONDON", "DUBAI", "SINGAPORE", "HONG KONG", "SHANGHAI", "LOS ANGELES",
+    "TOKYO", "PARIS", "CHICAGO", "TORONTO", "BERLIN", "BANGKOK", "SEOUL", "SYDNEY",
+    "AMSTERDAM", "FRANKFURT", "SAN FRANCISCO", "MUNICH", "KUALA LUMPUR", "HAMBURG",
+    "BEIJING", "JAKARTA", "ROME", "ZURICH", "MOSCOW", "ISTANBUL", "BRUSSELS", "BARCELONA",
+    "CAPE TOWN", "MEXICO CITY", "SAO PAULO", "DOHA", "MELBOURNE", "MIAMI", "STOCKHOLM",
+    "VIENNA", "COPENHAGEN", "BOSTON", "WARSAW", "AUCKLAND", "OSLO", "MILAN", "MANILA",
+    "LAGOS", "ABU DHABI", "HELSINKI", "HOUSTON", "GENEVA", "PRAGUE"
+]
+
+standard_cities = india_cities + global_cities
+
+def normalize_city(city, choices=standard_cities, threshold=90):
+    if pd.isna(city):
+        return city
+    match, score = process.extractOne(str(city).upper(), choices)
+    return match if score >= threshold else city
 
 def load_incremental_data():
     all_files = glob(os.path.join(RAW_DIR, "*.xlsx"))
@@ -28,6 +58,10 @@ def load_incremental_data():
                 df[col] = df[col].astype(str)
             df["source_file"] = os.path.basename(file)
             dfs.append(df)
+
+            if "City" in df.columns:
+                df["City_normalized"] = df["City"].apply(normalize_city)
+
         except Exception as e:
             print(f"Failed: {file}")
 
@@ -49,6 +83,3 @@ def load_incremental_data():
 
     print(f"Updated: {len(df_clean)} rows added")
     return df_all
-
-
-
