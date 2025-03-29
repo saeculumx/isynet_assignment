@@ -1,0 +1,124 @@
+<div>
+  <h1>{{ title }}</h1>
+
+  <div>
+    <label>Filter Conditions:</label>
+    <div *ngFor="let filter of filters; let i = index">
+      <select [(ngModel)]="filter.field">
+        <option *ngFor="let column of columns" [value]="column">{{ column }}</option>
+      </select>
+
+      <select [(ngModel)]="filter.operator">
+        <option value="=">=</option>
+        <option value="!=">≠</option>
+        <option value=">">&gt;</option>
+        <option value="<">&lt;</option>
+        <option value="contains">contains</option>
+        <option value="startswith">starts with</option>
+        <option value="endswith">ends with</option>
+      </select>
+
+      <input type="text" [(ngModel)]="filter.value" placeholder="Value"/>
+
+      <button (click)="removeFilter(i)" *ngIf="filters.length > 1">Remove</button>
+    </div>
+    <button (click)="addFilter()">Add Condition</button>
+  </div>
+
+  <div>
+    <button (click)="resetFilters()">Reset Filters</button>
+    <button (click)="search()">Search</button>
+  </div>
+
+  <div>
+    <label>Select Columns to Display:</label>
+    <div class="checkbox-container">
+      <div *ngFor="let column of columns">
+        <input type="checkbox"
+               [checked]="selectedColumns.includes(column)"
+               (change)="toggleColumn(column, $event)"/>
+        <label>{{ column }}</label>
+      </div>
+    </div>
+    <button (click)="selectAllColumns()">Select All</button>
+    <button (click)="deselectAllColumns()">Deselect All</button>
+  </div>
+
+  <div>
+    <label>Total_Amount_INV_FC Filter:</label>
+    <select [(ngModel)]="amountFilter">
+      <option value="no_filter">No Filter</option>
+      <option value="filter_wrong">Filter out wrong captured (&ge; 0.0001)</option>
+      <option value="filter_ncv">Filter out NCV (&ge; 1)</option>
+    </select>
+  </div>
+
+  <div *ngIf="totalResults > 0">
+    <p>Search Time: {{ searchTime }} seconds</p>
+    <p>Total Results: {{ totalResults }} | Total Pages: {{ totalPages }}</p>
+  </div>
+
+  <table border="1">
+    <thead>
+    <tr>
+      <th *ngFor="let column of selectedColumns" (click)="sortByColumn(column)" style="cursor: pointer;">
+        {{ column }}
+        <span *ngIf="sortColumn === column">
+            {{ sortDirection === 'asc' ? '▲' : '▼' }}
+          </span>
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let item of searchResults">
+      <td *ngFor="let column of selectedColumns">
+        {{ item[column] }}
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div>
+    <button (click)="previousPage()" [disabled]="currentPage <= 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+  </div>
+
+  <hr>
+  <h3>Visualization</h3>
+  <div>
+    <label>X Axis (Group by):</label>
+    <select [(ngModel)]="xField">
+      <option *ngFor="let col of columns" [value]="col">{{ col }}</option>
+    </select>
+
+    <label>Y Axis (Value):</label>
+    <select [(ngModel)]="yField">
+      <option *ngFor="let col of columns" [value]="col">{{ col }}</option>
+    </select>
+
+    <label>Aggregation:</label>
+    <select [(ngModel)]="aggFunc">
+      <option value="sum">Sum</option>
+      <option value="avg">Average</option>
+      <option value="count">Count</option>
+    </select>
+
+    <label>Chart Type:</label>
+    <select [(ngModel)]="chartType">
+      <option value="bar">Bar</option>
+      <option value="pie">Pie</option>
+      <option value="line">Line</option>
+    </select>
+
+    <button (click)="loadAggregationChart()">Generate Chart</button>
+  </div>
+
+  <div *ngIf="isBrowser">
+    <canvas baseChart
+            [data]="chartData"
+            [type]="chartType">
+    </canvas>
+  </div>
+
+</div>

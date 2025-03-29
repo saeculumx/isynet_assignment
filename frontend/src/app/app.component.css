@@ -1,0 +1,14 @@
+.checkbox-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.checkbox-container label {
+  margin-right: 10px;
+}
+
+.no-results-message {
+  color: red;
+  font-weight: bold;
+}
