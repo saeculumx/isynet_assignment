@@ -1,0 +1,30 @@
+name: Deploy Backend to Vultr
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: SSH Deploy
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.SERVER_IP }} "
+            cd /root/isynet_assignment &&
+            git pull &&
+            docker compose down &&
+            docker compose up -d --build
+          "
