@@ -25,6 +25,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.SERVER_IP }} << 'EOF'
             cd ${{ secrets.APP_DIR }}
             git pull
-            docker compose down
-            docker compose up -d --build
+            if command -v docker-compose &> /dev/null; then
+              docker-compose down
+              docker-compose up -d --build
+            else
+              docker compose down
+              docker compose up -d --build
+            fi
           EOF
