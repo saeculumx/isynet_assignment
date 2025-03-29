@@ -25,10 +25,14 @@
     <button (click)="addFilter()">Add Condition</button>
   </div>
 
+  <hr>
+
   <div>
     <button (click)="resetFilters()">Reset Filters</button>
     <button (click)="search()">Search</button>
   </div>
+
+  <hr>
 
   <div>
     <label>Select Columns to Display:</label>
@@ -44,6 +48,8 @@
     <button (click)="deselectAllColumns()">Deselect All</button>
   </div>
 
+  <hr>
+
   <div>
     <label>Total_Amount_INV_FC Filter:</label>
     <select [(ngModel)]="amountFilter">
@@ -57,6 +63,8 @@
     <p>Search Time: {{ searchTime }} seconds</p>
     <p>Total Results: {{ totalResults }} | Total Pages: {{ totalPages }}</p>
   </div>
+
+  <hr>
 
   <table border="1">
     <thead>
@@ -85,6 +93,7 @@
   </div>
 
   <hr>
+
   <h3>Visualization</h3>
   <div>
     <label>X Axis (Group by):</label>
@@ -114,11 +123,14 @@
     <button (click)="loadAggregationChart()">Generate Chart</button>
   </div>
 
-  <div *ngIf="isBrowser">
+  <hr>
+  <div *ngIf="isBrowser" style="width: 500px">
     <canvas baseChart
             [data]="chartData"
             [type]="chartType">
     </canvas>
   </div>
+
+  <hr>
 
 </div>

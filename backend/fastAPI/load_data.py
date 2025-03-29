@@ -8,6 +8,19 @@ PROCESSED_PATH = "raw/processed_files.txt"
 RAW_DIR = "data"
 
 def load_incremental_data():
+    """
+    Loads and processes new Excel files from a raw data directory incrementally.
+
+    This function identifies unprocessed `.xlsx` files in the RAW_DIR, reads them,
+    standardizes string columns, adds a `source_file` column, and appends them to an existing
+    dataset stored in PARQUET_PATH. It maintains a log of processed filenames in PROCESSED_PATH
+    to avoid duplication. New data is merged, deduplicated, and stored back as a Parquet file.
+
+    To reset the dataset, delete content inside processed_files and merged_data.parquet, this function is applied everytime main.py started looking for new files.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the full dataset after merging new files.
+    """
     all_files = glob(os.path.join(RAW_DIR, "*.xlsx"))
     if os.path.exists(PROCESSED_PATH):
         with open(PROCESSED_PATH, "r") as f:

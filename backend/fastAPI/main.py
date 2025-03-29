@@ -6,7 +6,7 @@ import os
 import time
 import math
 import pandas as pd
-
+from fastapi.responses import JSONResponse
 app = FastAPI()
 
 app.add_middleware(
@@ -29,6 +29,20 @@ def search(
     sort_dir: str = Query("asc"),
     amount_filter: str = Query("no_filter")
 ):
+    """
+    Performs filtered, page sliced, sort and cleaned result.
+
+    Args:
+        filters (List[Dict[str, Any]]): A list of filter conditions, see Angular app.comp.ts addFilter().
+        page (int): The page number of search results (from 1).
+        sort_by (str): The column name to sort by. If empty, no sorting is applied.
+        sort_dir (str): Sorting direction, either 'asc' or 'desc' with ascend and descend.
+        amount_filter (str): Optional filter for the 'Total_Amount_INV_FC' field. Options are 'no_filter', 'filter_wrong', or 'filter_ncv' to remove nothing/ probably wrong data/ most wrong data + NCV (some free).
+
+    Returns:
+        dict: A dictionary containing paged result data, total result count, total pages, and search time.
+    """
+
     start_time = time.time()
     result = df.copy()
 
@@ -67,6 +81,7 @@ def search(
         elif amount_filter == "filter_ncv":
             result = result[pd.to_numeric(result["Total_Amount_INV_FC"], errors="coerce") >= 1]
 
+    # page handling
     page_size = 50
     total_results = len(result)
     total_pages = math.ceil(total_results / page_size)
@@ -84,6 +99,12 @@ def search(
 
 @app.get("/meta")
 def get_metadata():
+    """
+    Returns metadata about the dataset.
+
+    Returns:
+        dict: A dictionary with total number of rows and list of column names to establish web table.
+    """
     return {
         "rows": len(df),
         "columns": df.columns.tolist()
@@ -96,6 +117,19 @@ def aggregate(
     y_field: str = Query(...),
     agg: str = Query("sum")
 ):
+    """
+    Applies filters and computes an aggregation over the dataset. Like tidyverse in R? "%>%"
+
+    Args:
+        filters (List[Dict[str, Any]]): A list of filter conditions, each with 'field', 'operator', and 'value'.
+        x_field (str): The column to group by.
+        y_field (str): The numeric column to aggregate.
+        agg (str): Aggregation type: 'sum', 'avg', or 'count'.
+
+    Returns:
+        dict: A dictionary of aggregated values by group. Returns top 20 groups sorted by value.
+    """
+
     result = df.copy()
     for f in filters:
         field = f.get("field")
@@ -136,4 +170,20 @@ def aggregate(
         return {"error": "Invalid aggregation type."}
 
     top_grouped = grouped.sort_values(ascending=False).head(20)
+
     return top_grouped.to_dict()
+
+@app.post("/reload")
+def reload_data():
+    """
+    Manually triggers the load_incremental_data() function
+
+    Returns:
+        JSONResponse: Contains the number of total rows after update.
+    """
+
+    df = load_incremental_data()
+    return JSONResponse({
+        "message": "Data reloaded successfully.",
+        "total_rows": len(df)
+    })

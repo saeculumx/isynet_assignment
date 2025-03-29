@@ -77,10 +77,12 @@ export class AppComponent implements OnInit {
 
   addFilter(): void {
     this.filters.push({ field: this.columns[0], operator: 'contains', value: '' });
+    this.currentPage = 1;
   }
 
   removeFilter(index: number): void {
     this.filters.splice(index, 1);
+    this.currentPage = 1;
   }
 
   search(): void {
