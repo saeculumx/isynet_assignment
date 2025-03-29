@@ -1,4 +1,4 @@
-name: Deploy Backend
+name: Deploy Full
 
 on:
   push:
@@ -23,6 +23,7 @@ jobs:
       - name: SSH Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.SERVER_IP }} << 'EOF'
+            set -e
             cd ${{ secrets.APP_DIR }}
             git pull
             if command -v docker-compose &> /dev/null; then
