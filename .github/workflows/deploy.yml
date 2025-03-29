@@ -1,4 +1,4 @@
-name: Deploy Backend to Vultr
+name: Deploy Backend
 
 on:
   push:
@@ -20,11 +20,11 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: SSH Deploy
+      - name: SSH Deploy to Server
         run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.SERVER_IP }} "
-            cd /root/isynet_assignment &&
-            git pull &&
-            docker compose down &&
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd ${{ secrets.APP_DIR }}
+            git pull
+            docker compose down
             docker compose up -d --build
-          "
+          EOF
